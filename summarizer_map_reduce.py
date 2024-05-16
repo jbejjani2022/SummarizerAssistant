@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+import sys
 
 from summarizer_naive import get_txt_content, get_page_content
 
@@ -44,8 +45,13 @@ def summarize(text: str) -> str:
         ```{text}```
         BULLET POINT SUMMARY:
         """
-    map_prompt_template = ChatPromptTemplate(template=map_prompt, input_variables=["text"])
-    combine_prompt_template = ChatPromptTemplate(template=combine_prompt, input_variables=["text"])
+    map_prompt_template = ChatPromptTemplate.from_messages([
+        ("human", map_prompt)
+    ])
+    # combine_prompt_template = ChatPromptTemplate(template=combine_prompt, input_variables=["text"])
+    combine_prompt_template = ChatPromptTemplate.from_messages([
+        ("human", combine_prompt)
+    ])
     
     summary_chain = load_summarize_chain(llm=llm,
                                          chain_type='map_reduce',
@@ -57,6 +63,11 @@ def summarize(text: str) -> str:
 
 
 def main():
+    if len(sys.argv) != 2:
+        print("Usage: python summarizer_map_reduce.py <string, .txt file, or url>")
+        return 1
+    text = sys.argv[1]
+    
     tools = [get_url_content, get_file_content, summarize]
 
     llm_with_tools = llm.bind_tools(tools)
@@ -84,9 +95,9 @@ def main():
     )
 
     agent_executor = AgentExecutor(agent=agent, tools=tools)
-    prompt = "Summarize the contents of https://python.langchain.com/v0.1/docs/modules/agents/how_to/custom_agent/ in bullet point format."
+    prompt = f"Summarize the contents of {text} in bullet point format."
 
-    # summary = list(agent_executor.stream({"input": "Summarize the contents of https://python.langchain.com/v0.1/docs/modules/agents/how_to/custom_agent/ in bullet point format."}))
+    # summary = list(agent_executor.stream({"input": prompt}))
     summary = agent_executor.invoke({"input": prompt})
     return summary['output']
     

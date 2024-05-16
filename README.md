@@ -1,3 +1,5 @@
+# Summarizer Assistant
+
 This repo features some of my experimentation with the fundamental LLM task of summarization. 
 I utilize the OpenAI API and Langchain to build a series of summarizer assistants. The assistants 
 can interact with the web, providing concise bullet point summaries of a page at a 

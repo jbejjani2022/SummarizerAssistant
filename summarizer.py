@@ -7,7 +7,6 @@ import sys
 import json
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_community.document_loaders import WebBaseLoader
 import tiktoken
 

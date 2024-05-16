@@ -1,5 +1,5 @@
 # Summarize text passed as a command line argument
-# Usage: python summarizer.py <string, .txt file, or url>
+# Usage: python naive_summarizer.py <string, .txt file, or url>
 # Performs naive truncation if input text exceeds max token length
 
 import os
@@ -7,15 +7,9 @@ import sys
 import json
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
-from langchain_community.document_loaders import WebBaseLoader
+from utilities import get_page_content, get_txt_content
+from settings import model, max_length
 import tiktoken
-
-# load OpenAPI API key from .env file
-
-load_dotenv(find_dotenv())
-client = OpenAI(
-  api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
-)
 
 function_descriptions = [
     {
@@ -48,27 +42,7 @@ function_descriptions = [
     }
 ]
 
-
-def get_page_content(url):
-    """Get the contents of the web page at the input url."""
-    loader = WebBaseLoader(url)
-    page = loader.load()
-    return page[0].page_content
-
-
-def get_txt_content(file):
-    """Get the contents of the .txt file."""
-    try:
-        with open(file, 'r') as f:
-            content = f.read()
-        return content
-    except FileNotFoundError:
-        return "The file was not found."
-    except IOError:
-        return "An error occurred while reading the file."
-
-
-def truncate_tokens(text, encoding_name, max_length=2000):
+def truncate_tokens(text, encoding_name, max_length=max_length):
     """Truncate a text string based on max number of tokens"""
     encoding = tiktoken.encoding_for_model(encoding_name)
     encoded_text = encoding.encode(text)
@@ -79,13 +53,12 @@ def truncate_tokens(text, encoding_name, max_length=2000):
     return text
 
 
-def main():
-    model = "gpt-3.5-turbo-0613"
-    if len(sys.argv) != 2:
-        print("Usage: python summarizer.py <string, .txt file, or url>")
-        return 1
-    
-    text = sys.argv[1]
+def summarize(text):
+    # load OpenAPI API key from .env file
+    load_dotenv(find_dotenv())
+    client = OpenAI(
+        api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
+    )
     
     prompt = f"""
     Summarize the following text delimited by triple backquotes. If it is a .txt file or URL,
@@ -133,5 +106,9 @@ def main():
     
     
 if __name__ == "__main__":
-    summary = main()
+    if len(sys.argv) != 2:
+        print("Usage: python naive_summarizer.py <string, .txt file, or url>")
+        sys.exit(1)
+    text = sys.argv[1]
+    summary = summarize(text)
     print(summary)

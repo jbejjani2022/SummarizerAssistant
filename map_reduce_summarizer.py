@@ -1,8 +1,12 @@
+# Summarize text passed as a command line argument
+# Usage: python map_reduce_summarizer.py <string, .txt file, or url>
+# Uses the map_reduce summarization strategy to avoid errors from input texts that exceed max token length
+
 from dotenv import load_dotenv
 import os
 import sys
 
-from summarizer_naive import get_txt_content, get_page_content
+from utilities import get_txt_content, get_page_content
 
 from langchain.chains.summarize import load_summarize_chain
 from langchain_openai import ChatOpenAI
@@ -16,6 +20,8 @@ from langchain.agents.format_scratchpad.openai_tools import (
 )
 from langchain.agents.output_parsers.openai_tools import OpenAIToolsAgentOutputParser
 
+load_dotenv()
+llm = ChatOpenAI(temperature=0, openai_api_key=os.environ['OPENAI_API_KEY'])
 
 @tool
 def get_url_content(url: str) -> str:
@@ -28,7 +34,7 @@ def get_file_content(file: str) -> str:
     return get_txt_content(file)
 
 @tool
-def summarize(text: str) -> str:
+def summarize_text(text: str) -> str:
     """Useful for summarizing a text."""
     # split the text into chunks that fit into the prompt limit
     # each token is about 4 characters, so 10000 character chunks are ~2500 tokens each
@@ -62,13 +68,8 @@ def summarize(text: str) -> str:
     return summary
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python summarizer_map_reduce.py <string, .txt file, or url>")
-        return 1
-    text = sys.argv[1]
-    
-    tools = [get_url_content, get_file_content, summarize]
+def summarize(text):
+    tools = [get_url_content, get_file_content, summarize_text]
 
     llm_with_tools = llm.bind_tools(tools)
 
@@ -103,7 +104,10 @@ def main():
     
 
 if __name__ == '__main__':
-    load_dotenv()
-    llm = ChatOpenAI(temperature=0, openai_api_key=os.environ['OPENAI_API_KEY'])
-    summary = main()
+    if len(sys.argv) != 2:
+        print("Usage: python map_reduce_summarizer.py <string, .txt file, or url>")
+        sys.exit(1)
+    text = sys.argv[1]
+    
+    summary = summarize(text)
     print(summary)

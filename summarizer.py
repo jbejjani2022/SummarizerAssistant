@@ -1,4 +1,6 @@
-# Usage: python summarizer.py --type {'n', 'mr'} text
+# Usage: python summarizer.py -t/--type {'n', 'mr'} text
+# ex. python summarizer.py -t mr https://en.wikipedia.org/wiki/Ludwig_van_Beethoven
+# python summarizer.py -t n data/romeojuliet.txt
 # where text is a string, .txt file, or URL
 # 'n' specifies naive summarization strategy, 'mr' specifies map_reduce strategy
 

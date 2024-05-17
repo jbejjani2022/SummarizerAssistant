@@ -7,6 +7,7 @@ import os
 import sys
 
 from utilities import get_txt_content, get_page_content
+from settings import chunk_size
 
 from langchain.chains.summarize import load_summarize_chain
 from langchain_openai import ChatOpenAI
@@ -24,22 +25,28 @@ load_dotenv()
 llm = ChatOpenAI(temperature=0, openai_api_key=os.environ['OPENAI_API_KEY'])
 
 @tool
-def get_url_content(url: str) -> str:
-    """Useful for getting the contents of the web page at the url."""
-    return get_page_content(url)
+def summarize_url_content(url: str) -> str:
+    """Useful for summarizing the contents of the web page at the url."""
+    text = get_page_content(url)
+    return summarize_string(text)
 
 @tool
-def get_file_content(file: str) -> str:
-    """Useful for getting the contents of a .txt file."""
-    return get_txt_content(file)
+def summarize_file_content(file: str) -> str:
+    """Useful for summarizing the contents of a .txt file."""
+    text = get_txt_content(file)
+    return summarize_string(text)
 
 @tool
-def summarize_text(text: str) -> str:
-    """Useful for summarizing a text."""
+def summarize_string(text: str) -> str:
+    """Useful for summarizing the contents of a string."""
     # split the text into chunks that fit into the prompt limit
-    # each token is about 4 characters, so 10000 character chunks are ~2500 tokens each
-    text_splitter = RecursiveCharacterTextSplitter(separators=["\n\n", "\n"], chunk_size=10000, chunk_overlap=500)
+    # each token is about 4 characters
+    # e.g. 10000 character chunks are ~2500 tokens each
+    text_splitter = RecursiveCharacterTextSplitter(separators=["\n\n", "\n"], chunk_size=chunk_size, chunk_overlap=500)
     docs = text_splitter.create_documents([text])
+    # print(len(docs))
+    # for doc in docs[:5]:
+    #     print(llm.get_num_tokens(doc.page_content))
     map_prompt = """
         Write a concise summary of the following:
         "{text}"
@@ -69,7 +76,7 @@ def summarize_text(text: str) -> str:
 
 
 def summarize(text):
-    tools = [get_url_content, get_file_content, summarize_text]
+    tools = [summarize_url_content, summarize_file_content, summarize_string]
 
     llm_with_tools = llm.bind_tools(tools)
 

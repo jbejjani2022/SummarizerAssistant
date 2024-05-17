@@ -1,6 +1,6 @@
 # test functionality of summarizers
 
-from summarizer_naive import get_page_content
+from naive_summarizer import get_page_content
 
 # some sample URLs to try
 # https://en.wikipedia.org/wiki/Ludwig_van_Beethoven

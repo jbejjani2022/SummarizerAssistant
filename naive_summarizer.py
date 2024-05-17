@@ -20,6 +20,7 @@ def truncate_tokens(text, encoding_name, max_length=token_limit):
     num_tokens = len(encoded_text)
     
     if num_tokens > max_length:
+        print("The text was truncated.")
         text = encoding.decode(encoded_text[:max_length])
     return text
 

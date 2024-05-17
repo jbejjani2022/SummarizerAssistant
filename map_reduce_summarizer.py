@@ -1,6 +1,7 @@
 # Summarize text passed as a command line argument
 # Usage: python map_reduce_summarizer.py <string, .txt file, or url>
-# Uses the map_reduce summarization strategy to avoid errors from input texts that exceed max token length
+# Uses the map_reduce summarization strategy to give plausible summaries for input texts that exceed max token length
+# Map reduce works as follows: chunk document, summarize each chunk, then summarize all chunk summaries
 
 from dotenv import load_dotenv
 import os

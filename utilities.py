@@ -17,4 +17,35 @@ def get_txt_content(file):
         return "The file was not found."
     except IOError:
         return "An error occurred while reading the file."
-    
+
+
+function_descriptions = [
+    {
+        "name": "get_page_content",
+        "description": "Get the contents of a web page given its URL",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "The URL of the web page, e.g. https://en.wikipedia.org/wiki/OpenAI"
+                }
+            },
+            "required": ["url"],
+        },
+    },
+    {
+        "name": "get_txt_content",
+        "description": "Get the contents of a .txt file",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "type": "string",
+                    "description": "The file name ending in .txt, e.g. shakespeare.txt"
+                }
+            },
+            "required": ["file"],
+        },
+    }
+]

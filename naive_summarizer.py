@@ -1,46 +1,17 @@
 # Summarize text passed as a command line argument
 # Usage: python naive_summarizer.py <string, .txt file, or url>
-# Performs naive truncation if input text exceeds max token length
+# Uses 'stuffing' approach: summarizes entire text at once, but 
+# truncates the text if it exceeds max token length
 
 import os
 import sys
 import json
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
-from utilities import get_page_content, get_txt_content
+from utilities import get_page_content, get_txt_content, function_descriptions
 from settings import model, token_limit
 import tiktoken
 
-function_descriptions = [
-    {
-        "name": "get_page_content",
-        "description": "Get the contents of a web page given its URL",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string",
-                    "description": "The URL of the web page, e.g. https://en.wikipedia.org/wiki/OpenAI"
-                }
-            },
-            "required": ["url"],
-        },
-    },
-    {
-        "name": "get_txt_content",
-        "description": "Get the contents of a .txt file",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "file": {
-                    "type": "string",
-                    "description": "The file name ending in .txt, e.g. shakespeare.txt"
-                }
-            },
-            "required": ["file"],
-        },
-    }
-]
 
 def truncate_tokens(text, encoding_name, max_length=token_limit):
     """Truncate a text string based on max number of tokens"""

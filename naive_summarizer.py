@@ -8,7 +8,7 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 from utilities import get_page_content, get_txt_content
-from settings import model, max_length
+from settings import model, token_limit
 import tiktoken
 
 function_descriptions = [
@@ -42,7 +42,7 @@ function_descriptions = [
     }
 ]
 
-def truncate_tokens(text, encoding_name, max_length=max_length):
+def truncate_tokens(text, encoding_name, max_length=token_limit):
     """Truncate a text string based on max number of tokens"""
     encoding = tiktoken.encoding_for_model(encoding_name)
     encoded_text = encoding.encode(text)

@@ -10,11 +10,14 @@ from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI
 from utilities import get_page_content, get_txt_content, function_descriptions
 
-file = "data/romeojuliet.txt"
-text = get_txt_content(file)
-
  
 def text_to_chunks(text):
+    encoding = tiktoken.encoding_for_model(model)
+    encoded_text = encoding.encode(text)
+    num_tokens = len(encoded_text)
+    if num_tokens <= token_limit:
+        return [[text]]
+    
     # chunk the text using spaCy sentence splitter
     # utilizes a tokenizer to prevent splitting up sentences during chunking
     nlp = spacy.load("en_core_web_sm")
@@ -23,7 +26,6 @@ def text_to_chunks(text):
     # for i, sent in enumerate(list(sentences)[:5]):
     #   print(f"sentence {i}: ", sent.text)
     
-    encoding = tiktoken.encoding_for_model(model)
     chunks = [[]]
     chunk_total_tokens = 0
     
@@ -62,6 +64,15 @@ def summarize_chunk(chunk, client, prompt, output):
     return summary.content
 
 
+def summarize_chunks(chunks, client, prompt, output):
+    chunk_summaries = []
+    for chunk in chunks:
+        chunk_summary = summarize_chunk(" ".join(chunk), client, prompt, output)
+        chunk_summaries.append(chunk_summary)
+        
+    return " ".join(chunk_summaries)
+
+
 def summarize(text):
     load_dotenv(find_dotenv())
     client = OpenAI(
@@ -75,33 +86,37 @@ def summarize(text):
     ```{text}```
     """
     
-    completion = client.chat.completions.create(
-        model = model,
-        messages = [
-            {"role": "user",
-             "content": prompt}
-        ],
-        functions = function_descriptions,
-        function_call = "auto"
-    )
-
-    output = completion.choices[0].message
-    
-    if not output.function_call:
-        return output.content
-    
-    # make the necessary function calls
-    param = json.loads(output.function_call.arguments)
-    f = eval(output.function_call.name)
-    text = f(**param)
-    
     chunks = text_to_chunks(text)
-    chunk_summaries = []
-    for chunk in chunks:
-        chunk_summary = summarize_chunk(" ".join(chunk), client, prompt, output)
-        chunk_summaries.append(chunk_summary)
+    if len(chunks) == 1:
+        # if text fits in one chunk, it is either a URL, .txt file, or small string
+        completion = client.chat.completions.create(
+            model = model,
+            messages = [
+                {"role": "user",
+                 "content": prompt}
+            ],
+            functions = function_descriptions,
+            function_call = "auto"
+        )
+
+        output = completion.choices[0].message
         
-    return " ".join(chunk_summaries)
+        if not output.function_call:
+            # text was small string
+            return output.content
+    
+        # text was a URL or .txt file
+        # make the necessary function calls
+        param = json.loads(output.function_call.arguments)
+        f = eval(output.function_call.name)
+        text = f(**param)
+
+        chunks = text_to_chunks(text)
+        return summarize_chunks(chunks, client, prompt, output)
+    
+    else:
+        # text is a large string taking multiple chunks
+        return summarize_chunks(chunks, client, prompt, output)
 
 
 if __name__ == "__main__":

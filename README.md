@@ -11,17 +11,15 @@ I implement 3 summarization strategies:
 2. map reduction: Utilize Langchain's map reduce to break the text into chunks that each fit within the `token_limit`, then summarize the chunks and summarize the summaries to produce a final output.
 3. chunking: If the text exceeds the `token_limit`, break it into chunks that fit within the limit, summarize each chunk, then patch together the summaries to make one large summary.
 
-Usage:
-
-Summarize a text by calling
-`python summarizer.py -t/--type {'n', 'm', 'c'} text`
-Where `text` is a string, .txt file, or URL, and `n` indicates naive truncation, `m` is map reduction, and `c` is chunking.
-Ex.
-`python summarizer.py -t m https://en.wikipedia.org/wiki/Ludwig_van_Beethoven`
+Usage:  
+Summarize a text by calling  
+`python summarizer.py -t/--type {'n', 'm', 'c'} text`,  
+where `text` is a string, .txt file, or URL, and `n` indicates naive truncation, `m` is map reduction, and `c` is chunking.  
+Ex.  
+`python summarizer.py -t m https://en.wikipedia.org/wiki/Ludwig_van_Beethoven`  
 `python summarizer.py -t n data/romeojuliet.txt`
 
-Here are some of my thoughts about each strategy after experimenting:
-
+Here are some of my thoughts about each strategy after experimenting:  
 Naive truncation is the most computationally efficient because it requires one call to the LLM, but it loses all information about text that is truncated. Map reduction produces a concise final summary that covers the entire text, but for longer texts it generally yields a coarse-grained summary that does not include much detail. Chunking provides the longest and most detailed final summary, but is unable to capture any contextual/semantic dependencies across chunks.
 
 Next steps:

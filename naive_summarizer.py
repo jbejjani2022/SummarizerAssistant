@@ -32,6 +32,8 @@ def summarize(text):
         api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
     )
     
+    text = truncate_tokens(text, model)
+    
     prompt = f"""
     Summarize the following text delimited by triple backquotes. If it is a .txt file or URL,
     summarize the contents of the file or web page.

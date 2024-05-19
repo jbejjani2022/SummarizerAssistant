@@ -46,28 +46,28 @@ def text_to_chunks(text):
     return chunks
 
 
-def summarize_chunk(chunk, client, prompt, output):
+def summarize_chunk(chunk, client):
+    prompt = f"""
+    Summarize the following text delimited by triple backquotes.
+    Format your response in bullet points that cover the key points of the text.
+    ```{chunk}```
+    """
     completion = client.chat.completions.create(
         model = model,
         messages = [
             {"role": "user",
              "content": prompt},
-            {"role": "function",
-             "name": output.function_call.name,
-             "content": chunk}
-        ],
-        functions = function_descriptions,
-        function_call = "auto"
+        ]
     )
 
     summary = completion.choices[0].message
     return summary.content
 
 
-def summarize_chunks(chunks, client, prompt, output):
+def summarize_chunks(chunks, client):
     chunk_summaries = []
     for chunk in chunks:
-        chunk_summary = summarize_chunk(" ".join(chunk), client, prompt, output)
+        chunk_summary = summarize_chunk(" ".join(chunk), client)
         chunk_summaries.append(chunk_summary)
         
     return " ".join(chunk_summaries)
@@ -112,11 +112,11 @@ def summarize(text):
         text = f(**param)
 
         chunks = text_to_chunks(text)
-        return summarize_chunks(chunks, client, prompt, output)
+        return summarize_chunks(chunks, client)
     
     else:
         # text is a large string taking multiple chunks
-        return summarize_chunks(chunks, client, prompt, output)
+        return summarize_chunks(chunks, client)
 
 
 if __name__ == "__main__":

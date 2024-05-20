@@ -11,6 +11,9 @@ I implement 3 summarization strategies:
 2. map reduction: Utilize Langchain's map reduce to break the text into chunks that each fit within the `token_limit`, then summarize the chunks and summarize the summaries to produce a final output.
 3. chunking: If the text exceeds the `token_limit`, break it into chunks that fit within the limit, summarize each chunk, then patch together the summaries to make one large summary.
 
+Setup:  
+Create a file named `.env` with the contents `OPENAI_API_KEY = "paste your OpenAI API key here"`.
+
 Usage:  
 Summarize a text by calling `python summarizer.py -t/--type {'n', 'm', 'c'} text`,    
 where `text` is a string, .txt file, or URL, and `n` indicates naive truncation, `m` is map reduction, and `c` is chunking.  
